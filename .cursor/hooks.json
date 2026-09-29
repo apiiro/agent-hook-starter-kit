@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      { "command": "python3 hook/hook.py" }
+    ]
+  }
+}
