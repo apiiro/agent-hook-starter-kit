@@ -1,55 +1,51 @@
 # Agent hook starter kit
 
-Optional starting point for the take-home challenge. It saves you the wiring
-and nothing else. There is no detection logic here.
+Wiring for a coding-agent hook. Claude Code, Codex, and Cursor each send a JSON
+event to `hook/hook.py`. Your logic goes in `decide()`.
 
-Change anything, use another language, or ignore the kit entirely.
+## Run it
 
-Please clone this repository rather than forking it, and keep your solution private.
+```sh
+cd agent-hook-starter-kit
+claude          # or codex, or open the folder in Cursor
+```
+
+Approve the hook when asked. Every event and decision is then appended to
+`logs/events.jsonl`. To check the wiring, ask the agent to run
+`npm install ./samples/canary-package`. It is blocked.
+
+## decide(event, folders)
+
+Return a reason to block, or `None` to allow. An allowed command runs for real.
+You get two inputs and can work from either.
+
+1. **The event.** The agent's tool call, as sent. Fields are documented in
+   each agent's hooks reference, linked below.
+2. **A local folder.** Put your sample under `samples/` and ask the agent to install it. The folder arrives in `folders`, which is empty for any other command.
+
+Simulate the hook without an agent:
+
+```sh
+echo '{"tool_name":"Bash","cwd":".","tool_input":{"command":"npm install ./samples/canary-package"}}' | python3 hook/hook.py
+```
+
+The canary check in `decide()` and the folder spotting are placeholders.
+Replace or extend anything.
 
 ## Files
 
 | Path | Purpose |
 |---|---|
-| `.claude/settings.json` | Registers the hook with Claude Code |
-| `.codex/hooks.json` | Registers the hook with Codex |
-| `.cursor/hooks.json` | Registers the hook with Cursor |
-| `hook/hook.py` | Reads the event, logs it, and calls `decide()` |
+| `hook/hook.py` | The hook |
+| `samples/` | Put your samples here. Holds the canary sample |
+| `.claude/settings.json` | Claude Code registration |
+| `.codex/hooks.json` | Codex registration, needs a git checkout |
+| `.cursor/hooks.json` | Cursor registration. Cursor also reads the Claude Code file, so delete one if events log twice |
 
-Requires Python 3 and one of the agents above. No other dependencies.
+The registration files hook one event, the one before every tool call. Which
+hooks to use is your call. Each agent's reference lists them:
+[Claude Code](https://code.claude.com/docs/en/hooks),
+[Codex](https://developers.openai.com/codex/hooks),
+[Cursor](https://cursor.com/docs/hooks).
 
-The same hook script serves all three agents. Use whichever you prefer.
-
-## Try it
-
-```sh
-cd agent-hook-starter-kit
-claude        # or: codex, or open the folder in Cursor
-```
-
-1. Approve the hook when asked. Claude Code and Cursor ask you to trust the
-   workspace. Codex asks you to review the hook under `/hooks`.
-2. Ask the agent to run `echo hello`. It runs, and the event is appended to
-   `logs/events.jsonl`.
-3. Ask the agent to run `echo STARTER-KIT-CANARY-DENY`. It is blocked.
-
-The canary only proves the wiring. Remove it once your own logic is in place.
-
-Two notes:
-
-- **Codex** finds the script through the git root, so work from a clone.
-- **Cursor** also loads Claude Code hook settings by default, so events may be
-  logged twice. Delete the config you do not need.
-
-## Yours to decide
-
-The kit registers one event for all tools, and an unhandled error in the hook
-lets the action proceed. Both are placeholders, not recommendations.
-
-## Official docs
-
-Each agent documents its events, output formats, and debugging.
-
-- [Claude Code hooks](https://code.claude.com/docs/en/hooks)
-- [Codex hooks](https://developers.openai.com/codex/hooks)
-- [Cursor hooks](https://cursor.com/docs/hooks)
+Requires Python 3.
